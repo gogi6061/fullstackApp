@@ -4,6 +4,7 @@ package com.amiriskhakov.spring.fullstackapp.entity;
 import com.amiriskhakov.spring.fullstackapp.entity.enums.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -11,29 +12,30 @@ import java.util.*;
 
 
 @Entity
-public class User {
+@Table(name = "users")
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long id;
+    private long id;
 
     @Column(unique = true, updatable = true)
-    public String username;
+    private String username;
 
     @Column(nullable = false)
-    public String lastname;
+    private String lastname;
 
     @Column(nullable = false)
-    public String name;
+    private String name;
 
     @Column(unique = true)
-    public String email;
+    private String email;
 
     @Column(columnDefinition = "text")
-    public String bio;
+    private String bio;
 
     @Column(length = 3000)
-    public String password;
+    private String password;
 
     @ElementCollection(targetClass = Role.class)
     @CollectionTable(joinColumns = @JoinColumn(columnDefinition = "user_id"))
@@ -61,7 +63,27 @@ public class User {
     public User() {
     }
 
-    public User(String username, String lastname, String name, String email, String bio, String password, Set<Role> role, List<Post> posts, LocalDateTime createDate) {
+    public User(long id,
+                String username,
+                String email,
+                String password,
+                Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
+    public User(String username,
+                String lastname,
+                String name,
+                String email,
+                String bio,
+                String password,
+                Set<Role> role,
+                List<Post> posts,
+                LocalDateTime createDate) {
 
         this.username = username;
         this.lastname = lastname;
@@ -122,9 +144,6 @@ public class User {
         this.bio = bio;
     }
 
-    public String getPassword() {
-        return password;
-    }
 
     public void setPassword(String password) {
         this.password = password;
@@ -155,4 +174,33 @@ public class User {
     }
 
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    @Override
+    public String getPassword(){
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
